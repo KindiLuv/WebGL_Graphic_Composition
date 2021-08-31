@@ -26,6 +26,7 @@
         let ambient;
 
         let spotLight;
+        let lightHelper, shadowCameraHelper;
 
         init();
         animate();
@@ -40,12 +41,10 @@
             
             renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-			//renderer.outputEncoding = THREE.sRGBEncoding;
+			renderer.outputEncoding = THREE.sRGBEncoding;
             
             //Init des elements simples
             scene = new THREE.Scene();
-            // scene.background = new THREE.TextureLoader().load( './assets/misc-textures/sky.jpg' );
-            // scene.color = 0x000000;
 
 			clock = new THREE.Clock();
 
@@ -71,26 +70,26 @@
 			controls.minDistance = 0.1;
 			controls.maxDistance = 500;
 			controls.enablePan = true;
+            controls.position0.set(0,0,0);
 
             //init Ambience
-            ambient = new THREE.AmbientLight(  0xffffff, 1 ); // soft white light
+            ambient = new THREE.AmbientLight(  0xffffff, 0.1 ); // soft white light
             scene.add( ambient );
 
-            // //init Light
-            // spotLight = new THREE.SpotLight( 0xffffff, 1 );
-			// spotLight.position.set( 15, 40, 35 );
-			// spotLight.angle = Math.PI / 2;
-			// spotLight.penumbra = 0.1;
-			// spotLight.decay = 2;
-			// spotLight.distance = 200;
+            //init Light
+            spotLight = new THREE.SpotLight( 0xffffff, 1 );
+			spotLight.position.set( 0, 6, 0 );
+			spotLight.angle = 45;
+			spotLight.penumbra = 1;
+			spotLight.decay = 2;
+			spotLight.distance = 200;
 
-			// spotLight.castShadow = true;
-			// spotLight.shadow.mapSize.width = 512;
-			// spotLight.shadow.mapSize.height = 512;
-			// spotLight.shadow.camera.near = 10;
-			// spotLight.shadow.camera.far = 200;
-			// spotLight.shadow.focus = 1;
-			// scene.add( spotLight );
+			spotLight.castShadow = true;
+			spotLight.shadow.mapSize.width = 512;
+			spotLight.shadow.mapSize.height = 512;
+			spotLight.shadow.camera.near = 0.001;
+			spotLight.shadow.camera.far = 200;
+			scene.add( spotLight );
 
             //Init Stats
             stats = Stats();
@@ -99,23 +98,67 @@
             //init God
             const roughnessMipmapper = new RoughnessMipmapper( renderer );
 
-            const loader = new GLTFLoader().setPath( './assets/models/Slaanesh/' );
-			loader.load( 'godBust.glb', function ( gltf ) {
+            const godloader = new GLTFLoader().setPath( './assets/models/Slaanesh/' );
+			godloader.load( 'godBust.glb', function ( gltf ) {
 
 				gltf.scene.traverse( function ( child ) {
 
 					if ( child.isMesh ) {
 
 						roughnessMipmapper.generateMipmaps( child.material );
-
+                        child.receiveShadow= true;
+                        child.castShadow = true;
 					}
 
 				});
-                gltf.scene.position.set(0, 0, -5);
+                gltf.scene.position.set(0, 0, -2);
+                gltf.scene.recieveShadow = true;
+                gltf.scene.castShadow = true;
                 scene.add( gltf.scene );
                 roughnessMipmapper.dispose();
                 render();
 			} );
+
+            //init Hand
+
+            const handloader = new GLTFLoader().setPath( './assets/models/Hand/' );
+			handloader.load( 'hand.glb', function ( gltf ) {
+
+				gltf.scene.traverse( function ( child ) {
+
+					if ( child.isMesh ) {
+
+						roughnessMipmapper.generateMipmaps( child.material );
+                        child.receiveShadow= true;
+                        child.castShadow = true;
+					}
+
+				});
+                gltf.scene.position.set(0, -1, 0);
+                gltf.scene.rotation.x += Math.PI/4;
+                gltf.scene.rotation.y += Math.PI;
+                gltf.scene.scale.set(6,6,6);
+               
+                scene.add( gltf.scene );
+                roughnessMipmapper.dispose();
+                render();
+			} );
+
+            // let floormaterial = new THREE.MeshPhongMaterial( { color: 0x808080, dithering: true } );
+
+			// let floorgeometry = new THREE.PlaneGeometry( 2000, 2000 );
+
+			// let floormesh = new THREE.Mesh( floorgeometry, floormaterial );
+			// floormesh.position.set( 0, - 1, 0 );
+			// floormesh.rotation.x = - Math.PI * 0.5;
+			// floormesh.receiveShadow = true;
+			// scene.add( floormesh );
+
+            lightHelper = new THREE.SpotLightHelper( spotLight );
+			scene.add( lightHelper );
+
+			shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera );
+			scene.add( shadowCameraHelper );
 
             window.addEventListener( 'resize', onWindowResize );
             render();
