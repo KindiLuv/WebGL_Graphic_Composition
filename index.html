@@ -20,6 +20,7 @@
 
         let camera, scene, renderer;
         let stats, clock;
+        let ambient;
 
         let spotLight;
 
@@ -36,10 +37,12 @@
             
             renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-			renderer.outputEncoding = THREE.sRGBEncoding;
+			//renderer.outputEncoding = THREE.sRGBEncoding;
             
             //Init des elements simples
             scene = new THREE.Scene();
+            scene.background = new THREE.TextureLoader().load( './assets/misc-textures/sky.jpg' );
+            scene.color = 0x000000;
 
 			clock = new THREE.Clock();
 
@@ -54,10 +57,34 @@
 			controls.minDistance = 20;
 			controls.maxDistance = 500;
 			controls.enablePan = true;
-        };
 
-        function animate(){
+            //init Ambience
+            ambient = new THREE.AmbientLight(  0xffffff, 0.1 ); // soft white light
+            scene.add( ambient );
 
+            //init Light
+            spotLight = new THREE.SpotLight( 0xffffff, 1 );
+			spotLight.position.set( 15, 40, 35 );
+			spotLight.angle = Math.PI / 2;
+			spotLight.penumbra = 0.1;
+			spotLight.decay = 2;
+			spotLight.distance = 200;
+
+			spotLight.castShadow = true;
+			spotLight.shadow.mapSize.width = 512;
+			spotLight.shadow.mapSize.height = 512;
+			spotLight.shadow.camera.near = 10;
+			spotLight.shadow.camera.far = 200;
+			spotLight.shadow.focus = 1;
+			scene.add( spotLight );
+
+            //Init Stats
+            stats = Stats();
+            document.body.appendChild( stats.dom );
+            window.addEventListener( 'resize', onWindowResize );
+            render();
+
+            
         };
 
         function onWindowResize() {
@@ -69,9 +96,19 @@
 
         }
 
+        function animate() {
+
+            requestAnimationFrame( animate );
+
+            render();
+            stats.update();
+
+        }
+
         function render() {
 
             const delta = clock.getDelta();
+            stats.update();
 
             renderer.render( scene, camera );
 
