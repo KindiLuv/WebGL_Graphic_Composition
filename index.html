@@ -15,6 +15,9 @@
 
         import Stats from '../examples/jsm/libs/stats.module.js';
 
+        import { GLTFLoader } from '../examples/jsm/loaders/GLTFLoader.js';
+        import { RoughnessMipmapper } from '../examples/jsm/utils/RoughnessMipmapper.js';
+
         //Surement a remplacer par FirstPerrsonControl
 		import { OrbitControls } from '../examples/jsm/controls/OrbitControls.js';
 
@@ -23,6 +26,7 @@
         let ambient;
 
         let spotLight;
+        let lightHelper, shadowCameraHelper;
 
         init();
         animate();
@@ -37,26 +41,37 @@
             
             renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-			//renderer.outputEncoding = THREE.sRGBEncoding;
+			renderer.outputEncoding = THREE.sRGBEncoding;
             
             //Init des elements simples
             scene = new THREE.Scene();
-            scene.background = new THREE.TextureLoader().load( './assets/misc-textures/sky.jpg' );
-            scene.color = 0x000000;
+            scene.fog = new THREE.Fog(0x18061F,1100,1500)
 
 			clock = new THREE.Clock();
 
+            //Init SkyBox
+            var skyGeo = new THREE.SphereGeometry(1500, 25, 25);
+            var skyloader  = new THREE.TextureLoader();
+            let texture = skyloader.load( "./assets/misc-textures/sky.jpg" );
+            var material = new THREE.MeshPhongMaterial({ 
+                    map: texture,
+            });
+            var sky = new THREE.Mesh(skyGeo, material);
+            sky.material.side = THREE.BackSide;
+            scene.add(sky);
+
             //Init Camera
             camera = new THREE.PerspectiveCamera( 85, window.innerWidth / window.innerHeight, 0.1, 2000 );
-            camera.position.set(0, 40, 0);
+            camera.position.set(0, 0, 0);
             camera.lookAt(scene.position);
 
             //Init OrbitControls
             const controls = new OrbitControls( camera, renderer.domElement );
 			controls.addEventListener( 'change', render );
-			controls.minDistance = 20;
+			controls.minDistance = 0.1;
 			controls.maxDistance = 500;
 			controls.enablePan = true;
+            controls.position0.set(0,0,0);
 
             //init Ambience
             ambient = new THREE.AmbientLight(  0xffffff, 0.1 ); // soft white light
@@ -64,27 +79,74 @@
 
             //init Light
             spotLight = new THREE.SpotLight( 0xffffff, 1 );
-			spotLight.position.set( 15, 40, 35 );
-			spotLight.angle = Math.PI / 2;
-			spotLight.penumbra = 0.1;
+			spotLight.position.set( 0, 6, -4 );
+			spotLight.angle = 45;
+			spotLight.penumbra = 1;
 			spotLight.decay = 2;
 			spotLight.distance = 200;
 
 			spotLight.castShadow = true;
 			spotLight.shadow.mapSize.width = 512;
 			spotLight.shadow.mapSize.height = 512;
-			spotLight.shadow.camera.near = 10;
+			spotLight.shadow.camera.near = 0.001;
 			spotLight.shadow.camera.far = 200;
-			spotLight.shadow.focus = 1;
 			scene.add( spotLight );
 
             //Init Stats
             stats = Stats();
             document.body.appendChild( stats.dom );
+
+            //init God
+            const roughnessMipmapper = new RoughnessMipmapper( renderer );
+
+            const godloader = new GLTFLoader().setPath( './assets/models/Slaanesh/' );
+			godloader.load( 'godBust.glb', function ( gltf ) {
+
+				gltf.scene.traverse( function ( child ) {
+
+					if ( child.isMesh ) {
+
+						roughnessMipmapper.generateMipmaps( child.material );
+                        child.receiveShadow= true;
+                        child.castShadow = true;
+					}
+
+				});
+                gltf.scene.position.set(0, 0, -2);
+                gltf.scene.recieveShadow = true;
+                gltf.scene.castShadow = true;
+                scene.add( gltf.scene );
+                roughnessMipmapper.dispose();
+                render();
+			} );
+
+            //init Hand
+            const handloader = new GLTFLoader().setPath( './assets/models/Hand/' );
+			handloader.load( 'hand.glb', function ( gltf ) {
+
+				gltf.scene.traverse( function ( child ) {
+
+					if ( child.isMesh ) {
+
+						roughnessMipmapper.generateMipmaps( child.material );
+                        child.receiveShadow= true;
+                        child.castShadow = true;
+					}
+
+				});
+                gltf.scene.position.set(0, -1, 0);
+                gltf.scene.rotation.x += Math.PI/4;
+                gltf.scene.rotation.y += Math.PI;
+                gltf.scene.scale.set(6,6,6);
+               
+                scene.add( gltf.scene );
+                roughnessMipmapper.dispose();
+                render();
+			} );
+
             window.addEventListener( 'resize', onWindowResize );
             render();
 
-            
         };
 
         function onWindowResize() {
