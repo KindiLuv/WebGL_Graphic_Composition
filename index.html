@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESGI Composition</title>
+</head>
+<body>
+
+    <!-- <audio src=""></audio> -->
+    
+    <script type=module>
+        import * as THREE from '../build/three.module.js';
+
+        import Stats from '../examples/jsm/libs/stats.module.js';
+
+        //Surement a remplacer par FirstPerrsonControl
+		import { OrbitControls } from '../examples/jsm/controls/OrbitControls.js';
+
+        let camera, scene, renderer;
+        let stats, clock;
+
+        let spotLight;
+
+        init();
+        animate();
+
+        function init(){
+
+            //Render CopyPasta
+            renderer = new THREE.WebGLRenderer();
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+            
+            renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			renderer.outputEncoding = THREE.sRGBEncoding;
+            
+            //Init des elements simples
+            scene = new THREE.Scene();
+
+			clock = new THREE.Clock();
+
+            //Init Camera
+            camera = new THREE.PerspectiveCamera( 85, window.innerWidth / window.innerHeight, 0.1, 2000 );
+            camera.position.set(0, 40, 0);
+            camera.lookAt(scene.position);
+
+            //Init OrbitControls
+            const controls = new OrbitControls( camera, renderer.domElement );
+			controls.addEventListener( 'change', render );
+			controls.minDistance = 20;
+			controls.maxDistance = 500;
+			controls.enablePan = true;
+        };
+
+        function animate(){
+
+        };
+
+        function onWindowResize() {
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize( window.innerWidth, window.innerHeight );
+
+        }
+
+        function render() {
+
+            const delta = clock.getDelta();
+
+            renderer.render( scene, camera );
+
+        };
+    </script>
+</body>
+</html>
