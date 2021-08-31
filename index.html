@@ -45,6 +45,7 @@
             
             //Init des elements simples
             scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x18061F,1100,1500)
 
 			clock = new THREE.Clock();
 
@@ -78,7 +79,7 @@
 
             //init Light
             spotLight = new THREE.SpotLight( 0xffffff, 1 );
-			spotLight.position.set( 0, 6, 0 );
+			spotLight.position.set( 0, 6, -4 );
 			spotLight.angle = 45;
 			spotLight.penumbra = 1;
 			spotLight.decay = 2;
@@ -120,7 +121,6 @@
 			} );
 
             //init Hand
-
             const handloader = new GLTFLoader().setPath( './assets/models/Hand/' );
 			handloader.load( 'hand.glb', function ( gltf ) {
 
@@ -143,22 +143,6 @@
                 roughnessMipmapper.dispose();
                 render();
 			} );
-
-            // let floormaterial = new THREE.MeshPhongMaterial( { color: 0x808080, dithering: true } );
-
-			// let floorgeometry = new THREE.PlaneGeometry( 2000, 2000 );
-
-			// let floormesh = new THREE.Mesh( floorgeometry, floormaterial );
-			// floormesh.position.set( 0, - 1, 0 );
-			// floormesh.rotation.x = - Math.PI * 0.5;
-			// floormesh.receiveShadow = true;
-			// scene.add( floormesh );
-
-            lightHelper = new THREE.SpotLightHelper( spotLight );
-			scene.add( lightHelper );
-
-			shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera );
-			scene.add( shadowCameraHelper );
 
             window.addEventListener( 'resize', onWindowResize );
             render();
