@@ -18,16 +18,16 @@
 	</div>
     
     <script type=module>
-        import * as THREE from '../build/three.module.js';
+        import * as THREE from './build/three.module.js';
 
-        import Stats from '../examples/jsm/libs/stats.module.js';
+        import Stats from './jsm/libs/stats.module.js';
 
-        import { GLTFLoader } from '../examples/jsm/loaders/GLTFLoader.js';
-        import { RoughnessMipmapper } from '../examples/jsm/utils/RoughnessMipmapper.js';
+        import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+        import { RoughnessMipmapper } from './jsm/utils/RoughnessMipmapper.js';
 
-        import { FBXLoader } from '../examples/jsm/loaders/FBXLoader.js';
+        import { FBXLoader } from './jsm/loaders/FBXLoader.js';
 
-		import { OrbitControls } from '../examples/jsm/controls/OrbitControls.js';
+		import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
         let camera, scene, renderer;
         let stats, clock;
